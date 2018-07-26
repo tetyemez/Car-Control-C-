@@ -1,0 +1,215 @@
+#include <SoftwareSerial.h>
+SoftwareSerial bluetooth(A0, A1); // RX, TX
+int gelenveri = 0;
+int gidenveri = 0;
+int yenigelenveri = 0;
+
+int LeftMotorForward = 11; // Sol motor 1.
+int LeftMotorReverse = 9; // Sol motor 2.
+
+int RightMotorForward = 12; // Sað motor 1.
+int RightMotorReverse = 13; // Sað motor 2.
+
+const int trig_on=10;
+const int echo_on=8;
+
+const int trig_sag=A4;
+const int echo_sag=A5;
+
+const int trig_sol=A2;
+const int echo_sol=A3;
+
+int sure_on=0;
+int sure_sag=0;
+int sure_sol=0;
+
+int mesafe_on=0;
+int mesafe_sag=0;
+int mesafe_sol=0;
+
+
+void setup() {
+pinMode(trig_sag, OUTPUT);
+pinMode(trig_sol, OUTPUT); 
+pinMode(trig_on, OUTPUT);
+  
+pinMode(LeftMotorForward, OUTPUT);  // ilgili pin çýkýþ olarak ayarlandý
+pinMode(RightMotorForward, OUTPUT);  // ilgili pin çýkýþ olarak ayarlandý.
+pinMode(LeftMotorReverse, OUTPUT);  // ilgili pin çýkýþ olarak ayarlandý.
+pinMode(RightMotorReverse, OUTPUT);  // ilgili pin çýkýþ olarak ayarlandý.
+Serial.begin(9600);
+bluetooth.begin(9600);
+}
+
+
+void loop() {
+  if (bluetooth.available()) {
+   yenigelenveri = 0;
+    digitalWrite(trig_on,HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(trig_on,LOW);
+    sure_on=pulseIn(echo_on,HIGH);
+    mesafe_on=(sure_on/2)/28.5;
+    
+    digitalWrite(trig_sag,HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(trig_sag,LOW);
+    sure_sag=pulseIn(echo_sag,HIGH);
+    mesafe_sag=(sure_sag/2)/28.5;
+
+    digitalWrite(trig_sol,HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(trig_sol,LOW);
+    sure_sol=pulseIn(echo_sol,HIGH);
+    mesafe_sol=(sure_sol/2)/28.5;
+
+    Serial.println(mesafe_on);//kontrol etmek için
+    Serial.println(mesafe_sag);//kontrol etmek için
+    Serial.println(mesafe_sol);//kontrol etmek için
+    
+    gelenveri = bluetooth.read();
+    //geri
+     if(gelenveri == 83 || yenigelenveri ==83 ){
+      Serial.println("DURDU!"); 
+   digitalWrite(RightMotorForward,LOW);   // Sað motor kapalý
+   digitalWrite(LeftMotorForward, LOW);   // Sol motor kapalý
+   digitalWrite(RightMotorReverse,LOW); 
+   digitalWrite(LeftMotorReverse,LOW);
+   
+  }
+  while(gelenveri == 90 && yenigelenveri !=83 ){
+    if(gelenveri == 90 &&  yenigelenveri !=83 ){
+      Serial.println( "Geri");
+   digitalWrite(RightMotorReverse,HIGH);   // Sað motor kapalý
+   digitalWrite(LeftMotorReverse, HIGH);   // Sol motor kapalý
+   digitalWrite(RightMotorForward,LOW); 
+    digitalWrite(LeftMotorForward,LOW);
+   delay(100);  
+    yenigelenveri = bluetooth.read();
+  }
+  }
+  /*  
+ // saða dönme
+  while(gelenveri == 82 && yenigelenveri !=83 ){
+    if(gelenveri == 82 && yenigelenveri !=83 && mesafe_sag > 10){
+      Serial.println( "Sag");
+   digitalWrite(RightMotorForward, LOW);   // Sað motor kapalý
+   digitalWrite(LeftMotorForward, HIGH);   // Sol motor açýk
+   delay(100);               // 3 saniye bekle
+   digitalWrite(trig_sag,HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(trig_sag,LOW);
+    sure_sag=pulseIn(echo_sag,HIGH);
+    mesafe_sag=(sure_sag/2)/28.5;
+    yenigelenveri = bluetooth.read();}
+    
+    else if(mesafe_sag<10)//saðda engel varsa
+    {bluetooth.write("b");
+    digitalWrite(RightMotorForward,LOW);   // Sað motor kapalý
+   digitalWrite(LeftMotorForward, LOW);   // Sol motor kapalý
+  }     
+  }
+
+ //sola dönme
+ while(gelenveri == 76 && yenigelenveri !=83 ){
+ if(gelenveri == 76 && yenigelenveri !=83 && mesafe_sol > 10 ){
+   Serial.println( "Sol");
+   digitalWrite(RightMotorForward, HIGH);   // Sað motor açýk
+   digitalWrite(LeftMotorForward, LOW);   // Sol motor kapaý
+   delay(100); 
+     digitalWrite(trig_sol,HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(trig_sol,LOW);
+    sure_sol=pulseIn(echo_sol,HIGH);
+    mesafe_sol=(sure_sol/2)/28.5;
+    yenigelenveri = bluetooth.read();}
+    else if(mesafe_sol<10)//saðda engel varsa
+    {bluetooth.write("b");
+    digitalWrite(RightMotorForward,LOW);   // Sað motor kapalý
+   digitalWrite(LeftMotorForward, LOW);   // Sol motor kapalý
+   digitalWrite(RightMotorReverse,LOW); 
+   digitalWrite(LeftMotorReverse,LOW);}
+    
+ }             
+*/
+  //ileri yön  
+  while(gelenveri == 70 && yenigelenveri !=83 ){
+    
+   if(mesafe_on > 10 && mesafe_sag >10 && mesafe_sol > 10){   
+    Serial.println("ileri");
+    digitalWrite(RightMotorForward,HIGH);   // Sað motor kapalý
+    digitalWrite(LeftMotorForward,HIGH);   // Sol motor kapalý
+    delay(100);  
+    digitalWrite(trig_on,HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(trig_on,LOW);
+    sure_on=pulseIn(echo_on,HIGH);
+    mesafe_on=(sure_on/2)/28.5;
+    
+    digitalWrite(trig_sag,HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(trig_sag,LOW);
+    sure_sag=pulseIn(echo_sag,HIGH);
+    mesafe_sag=(sure_sag/2)/28.5;
+
+    digitalWrite(trig_sol,HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(trig_sol,LOW);
+    sure_sol=pulseIn(echo_sol,HIGH);
+    mesafe_sol=(sure_sol/2)/28.5;
+    yenigelenveri = bluetooth.read();
+    Serial.println(yenigelenveri);
+    Serial.println(gelenveri);
+    if(yenigelenveri==83)
+    {
+      Serial.println("DURDU!"); 
+   digitalWrite(RightMotorForward,LOW);   // Sað motor kapalý
+   digitalWrite(LeftMotorForward, LOW);   // Sol motor kapalý
+   digitalWrite(RightMotorReverse,LOW); 
+   digitalWrite(LeftMotorReverse,LOW);
+   
+    }    
+    }
+  else if((mesafe_on < 10 || mesafe_sag <10 || mesafe_sol < 10))
+  {
+    Serial.println("dur");
+    digitalWrite(RightMotorForward,LOW); 
+    digitalWrite(LeftMotorForward,LOW);
+    delay(100);
+    if(mesafe_on<10 && mesafe_sag>10 && mesafe_sol>10)//önde engel varsa
+    {bluetooth.write("a");}
+    else if(mesafe_on>10 && mesafe_sag<10 && mesafe_sol>10)//saðda engel varsa
+    {bluetooth.write("b");}
+    else if(mesafe_on>10 && mesafe_sag>10 && mesafe_sol<10)//solda engel varsa
+    {bluetooth.write("c");}
+    else if(mesafe_on<10 && mesafe_sag<10 && mesafe_sol>10)//önde ve saðda engel varsa
+    {bluetooth.write("d");}
+    else if(mesafe_on<10 && mesafe_sag>10 && mesafe_sol<10)//önde ve solda engel varsa
+    {bluetooth.write("e");}
+    else if(mesafe_on>10 && mesafe_sag<10 && mesafe_sol<10)//saðda ve solda engel varsa
+    {bluetooth.write("f");}
+    else if(mesafe_on<10&& mesafe_sag<10 && mesafe_sol<10)//önde,saðda ve solda engel varsa
+    {bluetooth.write("g");}  
+    digitalWrite(trig_on,HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(trig_on,LOW);
+    sure_on=pulseIn(echo_on,HIGH);
+    mesafe_on=(sure_on/2)/28.5;
+    
+    digitalWrite(trig_sag,HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(trig_sag,LOW);
+    sure_sag=pulseIn(echo_sag,HIGH);
+    mesafe_sag=(sure_sag/2)/28.5;
+
+    digitalWrite(trig_sol,HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(trig_sol,LOW);
+    sure_sol=pulseIn(echo_sol,HIGH);
+    mesafe_sol=(sure_sol/2)/28.5;
+    yenigelenveri = bluetooth.read();
+    Serial.println(yenigelenveri);
+  }
+  }
+ }
+}
